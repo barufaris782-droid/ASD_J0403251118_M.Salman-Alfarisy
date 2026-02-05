@@ -1,0 +1,130 @@
+#====================================================
+# Praktikum 2 : Konsep ADT dan File Handling
+# Fokus: Manajemen Stok Barang
+#====================================================
+nama_file = "stok_barang.txt"
+def baca_data_stok(nama_file):
+    data_dict = {}
+    try:
+        with open(nama_file, "r", encoding="utf-8") as file:
+            for baris in file:
+                baris = baris.strip()
+                if not baris: continue
+                # Memisahkan Kode, Nama, dan Stok
+                parts = baris.split(",")
+                if len(parts) == 3:
+                    kode, nama, stok = parts
+                    data_dict[kode] = {"nama": nama, "stok": int(stok)}
+        return data_dict
+    except FileNotFoundError:
+        return {}
+
+# MENU 1: Tampilkan semua barang 
+def tampilkan_barang(data_dict):
+    print("\n=== DAFTAR SELURUH BARANG ===")
+    if not data_dict:
+        print("Data kosong.")
+        return
+    print(f"{'Kode':<10} | {'Nama Barang':<20} | {'Stok':>5}")
+    print("-" * 40)
+    for kode, info in sorted(data_dict.items()):
+        print(f"{kode:<10} | {info['nama']:<20} | {info['stok']:>5}")
+
+# MENU 2: Cari barang berdasarkan kode
+def cari_barang(data_dict):
+    kode = input("Masukkan kode barang yang dicari: ").strip()
+    if kode in data_dict:
+        item = data_dict[kode]
+        print(f"Data Ditemukan -> Nama: {item['nama']}, Stok: {item['stok']}")
+    else:
+        print("Barang tidak ditemukan.") 
+
+# MENU 3: Tambah barang baru 
+def tambah_barang(data_dict):
+    kode = input("Masukkan kode barang baru: ").strip()
+    if kode in data_dict:
+        print("Kode sudah digunakan.") 
+        return
+    
+    nama = input("Masukkan nama barang: ").strip()
+    try:
+        stok_awal = int(input("Masukkan stok awal: "))
+        data_dict[kode] = {"nama": nama, "stok": stok_awal}
+        print("Barang berhasil ditambahkan ke daftar.")
+    except ValueError:
+        print("Gagal: Stok harus berupa angka.")
+
+# --- MENU 4: Update stok barang ---
+def update_stok(data_dict):
+    kode = input("Masukkan kode barang: ").strip()
+    if kode not in data_dict:
+        print("Barang tidak ditemukan.")
+        return
+    
+    print(f"Barang: {data_dict[kode]['nama']} | Stok saat ini: {data_dict[kode]['stok']}")
+    print("1. Tambah Stok")
+    print("2. Kurangi Stok")
+    pilihan = input("Pilih (1/2): ")
+    
+    try:
+        jumlah = int(input("Masukkan jumlah stok: "))
+        if pilihan == "1":
+            data_dict[kode]['stok'] += jumlah
+            print("Stok berhasil diperbarui (bertambah).")
+        elif pilihan == "2":
+            if data_dict[kode]['stok'] - jumlah < 0:
+                print("Gagal: Stok tidak boleh negatif.") 
+            else:
+                data_dict[kode]['stok'] -= jumlah
+                print(f"Stok berhasil diperbarui {jumlah}")
+        else:
+            print("Pilihan aksi tidak valid.")
+    except ValueError:
+        print("Gagal: Input jumlah harus angka.")
+
+# MENU 5: Simpan ke file
+def simpan_data(nama_file, data_dict):
+    try:
+        with open(nama_file, "w", encoding="utf-8") as file: 
+            for kode, info in data_dict.items():
+                file.write(f"{kode},{info['nama']},{info['stok']}\n")
+        print(f"Seluruh data terbaru berhasil disimpan ke {nama_file}")
+    except Exception as e:
+        print(f"Terjadi kesalahan saat menyimpan: {e}")
+
+# MENU UTAMA
+def main():
+    nama_file = "stok_barang.txt"
+    buka_data = buka_data = baca_data_stok(nama_file)
+
+    while True:
+        print("\n" + "="*30)
+        print("   MENU UTAMA")
+        print("="*30)
+        print("1. Tampilkan semua barang")
+        print("2. Cari barang berdasarkan kode")
+        print("3. Tambah barang baru")
+        print("4. Update stok barang")
+        print("5. Simpan ke file")
+        print("0. Keluar")
+
+        pilihan = input("Pilih Menu : ").strip()
+
+        if pilihan == "1":
+            tampilkan_barang(buka_data)
+        elif pilihan == "2":
+            cari_barang(buka_data)
+        elif pilihan == "3":
+            tambah_barang(buka_data)
+        elif pilihan == "4":
+            update_stok(buka_data)
+        elif pilihan == "5":
+            simpan_data(nama_file, buka_data)
+        elif pilihan == "0":
+            print("Program selesai.") 
+            break
+        else:
+            print("Pilihan menu tidak tersedia.")
+
+if __name__ == '__main__':
+    main()
